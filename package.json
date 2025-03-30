@@ -1,0 +1,14 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "4.8.2",
+    "@types/mocha": "^10.0.10",
+    "hardhat": "^2.22.19",
+    "hardhat-deploy": "^1.0.1",
+    "solidity-coverage": "^0.8.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
