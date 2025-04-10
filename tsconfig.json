@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "paths": {
-      "@typechain-types/*": ["./typechain-types/*"]
-    },
+    "baseUrl": ".",
     "target": "es2020",
     "module": "commonjs",
     "esModuleInterop": true,
