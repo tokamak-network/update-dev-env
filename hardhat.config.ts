@@ -1,9 +1,13 @@
-import type { HardhatUserConfig } from 'hardhat/config'
-import '@nomicfoundation/hardhat-toolbox'
-import 'solidity-coverage'
-import 'hardhat-deploy'
-import 'tsconfig-paths/register'
 import '@nomicfoundation/hardhat-chai-matchers'
+import '@nomicfoundation/hardhat-toolbox'
+import dotenv from 'dotenv'
+import 'hardhat-deploy'
+import type { HardhatUserConfig } from 'hardhat/config'
+import 'solidity-coverage'
+import 'tsconfig-paths/register'
+
+dotenv.config()
+
 // MultisigWallet  0xE3F72E959834d0A72aFb2ea79F5ec2b4243d2d95
 
 // DAOCommitteeProxy 0xDD9f0cCc044B0781289Ee318e5971b0139602C26
@@ -37,14 +41,25 @@ const config: HardhatUserConfig = {
       hardhat: '0x0b58ca72b12f01fc05f8f252e226f3e2089bd00e'
     }
   },
-  defaultNetwork: 'hardhat',
+  defaultNetwork: process.argv[2] === 'test' ? 'hardhat' : process.env.NETWORK || 'mainnet',
   networks: {
     hardhat: {
       forking: {
-        url: '',
-        blockNumber: 22224849
+        url:
+          process.env.FORK_NETWORK === 'mainnet'
+            ? process.env.MAINNET_RPC_URL || ''
+            : process.env.SEPOLIA_RPC_URL || '',
+        blockNumber: process.env.FORK_BLOCK_NUMBER ? Number(process.env.FORK_BLOCK_NUMBER) : 22224849
       },
       allowUnlimitedContractSize: false
+    },
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL || '',
+      accounts: [process.env.PRIVATE_KEY || '']
+    },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY || '']
     }
   },
   solidity: {
