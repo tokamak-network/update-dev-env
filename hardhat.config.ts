@@ -39,9 +39,13 @@ const config: HardhatUserConfig = {
     },
     DEPOSIT_MANAGER: {
       hardhat: '0x0b58ca72b12f01fc05f8f252e226f3e2089bd00e'
+    },
+    SEIG_MANAGER: {
+      hardhat: '0x0b55a0f463b6defb81c6063973763951712d0e5f'
     }
   },
-  defaultNetwork: process.argv[2] === 'test' ? 'hardhat' : process.env.NETWORK || 'mainnet',
+  defaultNetwork:
+    process.argv[2] === 'test' || process.argv[2] === 'coverage' ? 'hardhat' : process.env.NETWORK || 'mainnet',
   networks: {
     hardhat: {
       forking: {

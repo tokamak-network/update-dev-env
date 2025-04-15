@@ -1,11 +1,9 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import type { Addressable } from 'ethers'
+
 import { ethers, getNamedAccounts, network } from 'hardhat'
 import type { OperatorManagerFactory, OperatorManagerV1_1 } from '../typechain-types'
-
-const fundingETH = (address: string | Addressable, amount = 100) =>
-  network.provider.send('hardhat_setBalance', [address, `0x${ethers.parseEther(amount.toString()).toString(16)}`])
+import { funding, impersonate } from '../utils'
 
 describe('OperatorManagerFactory', () => {
   let DEPOSIT_MANAGER: string
@@ -16,7 +14,7 @@ describe('OperatorManagerFactory', () => {
   let operatorManagerFactory: OperatorManagerFactory
   let operatorManagerImpl: OperatorManagerV1_1
 
-  const fixture = async () => {
+  const deploy = async () => {
     const operatorManagerImpl = await ethers.deployContract('OperatorManagerV1_1')
     const operatorManagerFactory = await ethers.deployContract('OperatorManagerFactory', [operatorManagerImpl.target])
     expect(await operatorManagerFactory.operatorManagerImp()).to.equal(operatorManagerImpl.target)
@@ -24,7 +22,7 @@ describe('OperatorManagerFactory', () => {
   }
 
   beforeEach(async () => {
-    ;({ operatorManagerFactory, operatorManagerImpl } = await loadFixture(fixture))
+    ;({ operatorManagerFactory, operatorManagerImpl } = await loadFixture(deploy))
     ;({ DEPOSIT_MANAGER, LAYER2_MANAGER, TON, WTON } = await getNamedAccounts())
   })
 
@@ -128,12 +126,8 @@ describe('OperatorManagerFactory', () => {
     it('should failed when create OperatorManager with RollupConfig(address(0))', async () => {
       await operatorManagerFactory.setAddresses(DEPOSIT_MANAGER, TON, WTON, LAYER2_MANAGER)
 
-      await network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [LAYER2_MANAGER]
-      })
-      await fundingETH(LAYER2_MANAGER)
-      const layer2ManagerSigner = await ethers.getSigner(LAYER2_MANAGER)
+      const layer2ManagerSigner = await impersonate(LAYER2_MANAGER)
+      await funding(LAYER2_MANAGER)
 
       await expect(operatorManagerFactory.connect(layer2ManagerSigner).createOperatorManager(ethers.ZeroAddress)).to.be
         .reverted
@@ -143,12 +137,8 @@ describe('OperatorManagerFactory', () => {
       const rollupConfig = await ethers.deployContract('RollupConfig')
       await operatorManagerFactory.setAddresses(DEPOSIT_MANAGER, TON, WTON, LAYER2_MANAGER)
 
-      await network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [LAYER2_MANAGER]
-      })
-      await fundingETH(LAYER2_MANAGER)
-      const layer2ManagerSigner = await ethers.getSigner(LAYER2_MANAGER)
+      const layer2ManagerSigner = await impersonate(LAYER2_MANAGER)
+      await funding(LAYER2_MANAGER)
 
       await expect(operatorManagerFactory.connect(layer2ManagerSigner).createOperatorManager(rollupConfig.target))
         .to.be.revertedWithCustomError(operatorManagerFactory, 'CreateError')
@@ -166,7 +156,7 @@ describe('OperatorManagerFactory', () => {
         method: 'hardhat_impersonateAccount',
         params: [LAYER2_MANAGER]
       })
-      await fundingETH(LAYER2_MANAGER)
+      await funding(LAYER2_MANAGER)
       const layer2ManagerSigner = await ethers.getSigner(LAYER2_MANAGER)
 
       await operatorManagerFactory.connect(layer2ManagerSigner).createOperatorManager(rollupConfig.target)
@@ -188,12 +178,14 @@ describe('OperatorManagerFactory', () => {
         params: [LAYER2_MANAGER]
       })
 
-      await fundingETH(LAYER2_MANAGER)
+      await funding(LAYER2_MANAGER)
       const layer2ManagerSigner = await ethers.getSigner(LAYER2_MANAGER)
       // workaround for ethers.js v6, we can't call contract's getAddress() method directly
       // because it's added as a property to the contract instance
       // https://docs.ethers.org/v6/api/contract/#BaseContract-getAddress
-      const operatorManagerAddress = await operatorManagerFactory['getAddress(address)'](rollupConfig.target)
+      const operatorManagerAddress = await (operatorManagerFactory as Record<string, any>)['getAddress(address)'](
+        rollupConfig.target
+      )
       await expect(operatorManagerFactory.connect(layer2ManagerSigner).createOperatorManager(rollupConfig.target))
         .to.emit(operatorManagerFactory, 'CreatedOperatorManager')
         .withArgs(rollupConfig.target, owner.address, sManager, operatorManagerAddress)
