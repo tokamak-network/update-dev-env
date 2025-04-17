@@ -42,6 +42,9 @@ const config: HardhatUserConfig = {
     },
     SEIG_MANAGER: {
       hardhat: '0x0b55a0f463b6defb81c6063973763951712d0e5f'
+    },
+    DAO_COMMITTEE: {
+      hardhat: '0xDD9f0cCc044B0781289Ee318e5971b0139602C26'
     }
   },
   defaultNetwork:
