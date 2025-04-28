@@ -138,7 +138,6 @@ contract OperatorManagerFactory is Ownable {
     function createOperatorManager(
         address rollupConfig
     ) external returns (address operatorManager) {
-        console.log("createOperatorManager", address(this));
         if (msg.sender != layer2Manager) revert CreateError(1);
         require(getAddress(rollupConfig).code.length == 0, "already created");
 
@@ -171,7 +170,6 @@ contract OperatorManagerFactory is Ownable {
      * @param rollupConfig  the rollupConfig address
      */
     function getAddress(address rollupConfig) public view returns (address) {
-        console.log("getAddress", address(this));
         return
             address(
                 uint160(

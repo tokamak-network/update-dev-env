@@ -28,6 +28,9 @@ dotenv.config()
 
 const config: HardhatUserConfig = {
   namedAccounts: {
+    L1_BRIDGE_REGISTRY: {
+      hardhat: '0x39d43281A4A5e922AB0DCf89825D73273D8C5BA4'
+    },
     TON: {
       hardhat: '0x2be5e8c109e2197D077D13A82dAead6a9b3433C5'
     },

@@ -455,7 +455,7 @@ contract L1BridgeRegistryV1_1 is
                     address portal_ = IOptimismSystemConfig(rollupConfig)
                         .optimismPortal();
                     if (portal_ != address(0)) {
-                        if (info.rollupType == 0 && !portal[portal_])
+                        if (info.rollupType == 0 && !portal[portal_] && !l1Bridge[l1Bridge_])
                             valid = true;
                     }
                 }
