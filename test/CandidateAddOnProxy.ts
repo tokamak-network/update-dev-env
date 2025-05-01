@@ -3,7 +3,7 @@ import { getStorageAt, loadFixture, setStorageAt } from '@nomicfoundation/hardha
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
-describe('CandidateAddOnV1_1', () => {
+describe('CandidateAddOnProxy', () => {
   let owner: HardhatEthersSigner
   let nonOwner: HardhatEthersSigner
 
@@ -16,18 +16,10 @@ describe('CandidateAddOnV1_1', () => {
   }
 
   const deployCandidateAddOn = async () => {
-    const candidateAddOn = await ethers.deployContract('CandidateAddOnV1_1')
-    const role = '0x0000000000000000000000000000000000000000000000000000000000000000'
-    const rolesStorageSlot = 5
-    const encodedOuter = ethers.AbiCoder.defaultAbiCoder().encode(['bytes32', 'uint256'], [role, rolesStorageSlot])
-    const outerSlot = ethers.keccak256(encodedOuter)
-    const encodedMember = ethers.AbiCoder.defaultAbiCoder().encode(
-      ['address', 'uint256'],
-      [owner.address, BigInt(outerSlot)]
-    )
-    const memberSlot = ethers.keccak256(encodedMember)
-    await setStorageAt(candidateAddOn.target.toString(), memberSlot, ethers.zeroPadValue('0x01', 32))
-
+    const candidateAddOnProxy = await ethers.deployContract('CandidateAddOnProxy')
+    const implementation = await ethers.deployContract('CandidateAddOnV1_1')
+    await candidateAddOnProxy.upgradeTo(implementation.target)
+    const candidateAddOn = await ethers.getContractAt('CandidateAddOnV1_1', candidateAddOnProxy.target)
     return { candidateAddOn }
   }
 
@@ -60,6 +52,7 @@ describe('CandidateAddOnV1_1', () => {
         candidateAddOn.connect(nonOwner).initialize(operatorManager, 'test', daoCommittee, seigManager, ton, wton)
       ).to.be.revertedWith('Accessible: Caller is not an admin')
     })
+
     it("should fail when operatorManager's rollupConfig is zero address", async () => {
       const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
       const { seigManager, ton, wton, daoCommittee } = generateAddresses()
