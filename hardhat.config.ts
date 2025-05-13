@@ -54,13 +54,13 @@ const config: HardhatUserConfig = {
     process.argv[2] === 'test' || process.argv[2] === 'coverage' ? 'hardhat' : process.env.NETWORK || 'mainnet',
   networks: {
     hardhat: {
-      forking: {
-        url:
-          process.env.FORK_NETWORK === 'mainnet'
-            ? process.env.MAINNET_RPC_URL || ''
-            : process.env.SEPOLIA_RPC_URL || '',
-        blockNumber: process.env.FORK_BLOCK_NUMBER ? Number(process.env.FORK_BLOCK_NUMBER) : 22224849
-      },
+      // forking: {
+      //   url:
+      //     process.env.FORK_NETWORK === 'mainnet'
+      //       ? process.env.MAINNET_RPC_URL || ''
+      //       : process.env.SEPOLIA_RPC_URL || '',
+      //   blockNumber: process.env.FORK_BLOCK_NUMBER ? Number(process.env.FORK_BLOCK_NUMBER) : 22224849
+      // },
       allowUnlimitedContractSize: false
     },
     mainnet: {

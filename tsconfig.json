@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "@/fixtures": ["./utils/fixtures"]
+      "@/fixtures": ["./utils/fixtures"],
+      "@utils": ["./utils"]
     }
   }
 }
