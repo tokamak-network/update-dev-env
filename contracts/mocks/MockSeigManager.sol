@@ -19,4 +19,12 @@ contract MockSeigManager {
     function setCoinage(address candidateAddOn, address coinage) external {
         coinages[candidateAddOn] = coinage;
     }
+
+    function excludeFromL2Seigniorage(address _layer2) external returns (bool) {
+        return true;
+    }
+
+    function includeFromL2Seigniorage(address _layer2) external returns (bool) {
+        return true;
+    }
 }

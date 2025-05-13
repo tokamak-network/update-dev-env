@@ -1,19 +1,12 @@
 import type { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { getStorageAt, loadFixture, setStorageAt } from '@nomicfoundation/hardhat-network-helpers'
+import { getRandomAddresses } from '@utils'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
 describe('CandidateAddOnV1_1', () => {
   let owner: HardhatEthersSigner
   let nonOwner: HardhatEthersSigner
-
-  const generateAddresses = () => {
-    const seigManager = ethers.Wallet.createRandom().address
-    const daoCommittee = ethers.Wallet.createRandom().address
-    const ton = ethers.Wallet.createRandom().address
-    const wton = ethers.Wallet.createRandom().address
-    return { seigManager, daoCommittee, ton, wton }
-  }
 
   const deployCandidateAddOn = async () => {
     const candidateAddOn = await ethers.deployContract('CandidateAddOnV1_1')
@@ -34,7 +27,7 @@ describe('CandidateAddOnV1_1', () => {
   const initializeCandidateAddOn = async () => {
     const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
 
-    const { ton, wton } = generateAddresses()
+    const [ton, wton] = getRandomAddresses(2)
     const seigManager = await ethers.deployContract('MockSeigManager')
     const coinage = await ethers.deployContract('MockCoinage')
     await seigManager.setCoinage(candidateAddOn, coinage)
@@ -54,7 +47,7 @@ describe('CandidateAddOnV1_1', () => {
   describe('Tests for initialize', () => {
     it('should fail when non-owner tries to initialize', async () => {
       const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
-      const { seigManager, ton, wton, daoCommittee } = generateAddresses()
+      const [seigManager, ton, wton, daoCommittee] = getRandomAddresses(4)
       const operatorManager = await ethers.deployContract('MockOperatorManager')
       await expect(
         candidateAddOn.connect(nonOwner).initialize(operatorManager, 'test', daoCommittee, seigManager, ton, wton)
@@ -62,7 +55,7 @@ describe('CandidateAddOnV1_1', () => {
     })
     it("should fail when operatorManager's rollupConfig is zero address", async () => {
       const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
-      const { seigManager, ton, wton, daoCommittee } = generateAddresses()
+      const [seigManager, ton, wton, daoCommittee] = getRandomAddresses(4)
       const operatorManager = await ethers.deployContract('MockOperatorManager')
       await expect(
         candidateAddOn.initialize(operatorManager.target, 'test', daoCommittee, seigManager, ton, wton)
@@ -71,7 +64,7 @@ describe('CandidateAddOnV1_1', () => {
 
     it('should fail when owner tries to initialize twice', async () => {
       const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
-      const { daoCommittee, seigManager, ton, wton } = generateAddresses()
+      const [daoCommittee, seigManager, ton, wton] = getRandomAddresses(4)
       const operatorManager = await ethers.deployContract('MockOperatorManager')
       await operatorManager.setRollupConfig(ethers.Wallet.createRandom().address)
       await candidateAddOn.initialize(operatorManager, 'test', daoCommittee, seigManager, ton, wton)
@@ -82,7 +75,7 @@ describe('CandidateAddOnV1_1', () => {
 
     it('initialize', async () => {
       const { candidateAddOn } = await loadFixture(deployCandidateAddOn)
-      const { daoCommittee, seigManager, ton, wton } = generateAddresses()
+      const [daoCommittee, seigManager, ton, wton] = getRandomAddresses(4)
       const operatorManager = await ethers.deployContract('MockOperatorManager')
       await operatorManager.setRollupConfig(ethers.Wallet.createRandom().address)
 

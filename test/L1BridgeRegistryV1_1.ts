@@ -5,7 +5,7 @@ import { expect } from 'chai'
 import { ethers, getNamedAccounts } from 'hardhat'
 import type { L1BridgeRegistryV1_1 } from '../typechain-types'
 
-describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
+describe('L1BridgeRegistryV1_1', () => {
   let owner: HardhatEthersSigner
   let manager: HardhatEthersSigner
   let seigniorageCommittee: HardhatEthersSigner
@@ -35,7 +35,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
     const l1StandardBridge = ethers.Wallet.createRandom().address
     const optimismPortal = ethers.Wallet.createRandom().address
     const rollupConfig = await ethers.deployContract('RollupConfig')
-    await rollupConfig.setL11StandardBridge(l1StandardBridge)
+    await rollupConfig.setL1StandardBridge(l1StandardBridge)
     await rollupConfig.setOptimismPortal(optimismPortal)
 
     return { l1BridgeRegistry, rollupConfig }
@@ -224,7 +224,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
     it('should fail registering rollup config when l1StandardBridge is not set', async () => {
       const { l1BridgeRegistry, rollupConfig } = await deployL1BridgeRegistryAndRollupConfig()
       await l1BridgeRegistry.addManager(manager.address)
-      await rollupConfig.setL11StandardBridge(ethers.ZeroAddress)
+      await rollupConfig.setL1StandardBridge(ethers.ZeroAddress)
 
       const l2ton = ethers.Wallet.createRandom().address
       await expect(
@@ -308,7 +308,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const optimismPortal = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
       await rollupConfig.setOptimismPortal(optimismPortal)
 
       await expect(
@@ -324,7 +324,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const optimismPortal = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
       await rollupConfig.setOptimismPortal(optimismPortal)
       const l2ton = ethers.Wallet.createRandom().address
 
@@ -349,7 +349,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const optimismPortal = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
       await rollupConfig.setOptimismPortal(optimismPortal)
 
       const l2ton = ethers.Wallet.createRandom().address
@@ -369,7 +369,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
     it('should fail registering rollup config when optimismPortal is not set', async () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
 
       const l2ton = ethers.Wallet.createRandom().address
       await expect(
@@ -400,7 +400,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const optimismPortal = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
       await rollupConfig.setOptimismPortal(optimismPortal)
 
       const l2ton = ethers.Wallet.createRandom().address
@@ -413,7 +413,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
       const l1StandardBridge = ethers.Wallet.createRandom().address
       const optimismPortal = ethers.Wallet.createRandom().address
       const rollupConfig = await ethers.deployContract('RollupConfig')
-      await rollupConfig.setL11StandardBridge(l1StandardBridge)
+      await rollupConfig.setL1StandardBridge(l1StandardBridge)
       await rollupConfig.setOptimismPortal(optimismPortal)
 
       const l2ton = ethers.Wallet.createRandom().address
@@ -444,7 +444,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
     //   const l1StandardBridge = ethers.Wallet.createRandom().address
     //   const optimismPortal = ethers.Wallet.createRandom().address
     //   const rollupConfig = await ethers.deployContract('RollupConfig')
-    //   await rollupConfig.setL11StandardBridge(l1StandardBridge)
+    //   await rollupConfig.setL1StandardBridge(l1StandardBridge)
     //   await rollupConfig.setOptimismPortal(optimismPortal)
 
     //   const l2ton = ethers.Wallet.createRandom().address
@@ -458,7 +458,7 @@ describe('L1BridgeRegistryV1_1(without Proxy Contract)', () => {
   describe('Tests for availableForRegistration', () => {
     it('should return false when rollup config has no l1StandardBridge', async () => {
       const { l1BridgeRegistry, rollupConfig } = await deployL1BridgeRegistryAndRollupConfig()
-      await rollupConfig.setL11StandardBridge(ethers.ZeroAddress)
+      await rollupConfig.setL1StandardBridge(ethers.ZeroAddress)
       expect(await l1BridgeRegistry.availableForRegistration(rollupConfig, 1)).to.be.equal(false)
     })
 

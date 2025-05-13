@@ -2,6 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {ICandidate} from "../dao/interfaces/ICandidate.sol";
+import {MockCandidateAddOn} from "./MockCandidateAddOn.sol";
 
 contract MockDaoCommittee {
     event ClaimedActivityReward(
@@ -30,5 +31,12 @@ contract MockDaoCommittee {
         address candidate = ICandidate(msg.sender).candidate();
         emit ClaimedActivityReward(candidate, _receiver, 0);
         return;
+    }
+
+    function createCandidateAddOn(
+        string calldata _memo,
+        address _operator
+    ) external returns (address) {
+        return address(new MockCandidateAddOn());
     }
 }
