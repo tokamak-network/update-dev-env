@@ -1,7 +1,8 @@
 import type { AuthControlL1BridgeRegistry } from '@contracts/common/AuthControlL1BridgeRegistry'
 import { AuthControlL1BridgeRegistry__factory } from '@factories/common/AuthControlL1BridgeRegistry__factory'
 import type { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
-import { loadFixture, setStorageAt } from '@nomicfoundation/hardhat-network-helpers'
+import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
+import { setAdmin } from '@utils/AccessControl'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 
@@ -21,15 +22,7 @@ describe('AuthControlL1BridgeRegistry', () => {
     const factory = new AuthControlL1BridgeRegistry__factory().connect(admin)
     const authControlL1BridgeRegistry = await factory.deploy()
 
-    const role = '0x0000000000000000000000000000000000000000000000000000000000000000'
-    const encodedOuter = ethers.AbiCoder.defaultAbiCoder().encode(['bytes32', 'uint256'], [role, 1])
-    const outerSlot = ethers.keccak256(encodedOuter)
-    const encodedMember = ethers.AbiCoder.defaultAbiCoder().encode(
-      ['address', 'uint256'],
-      [admin.address, BigInt(outerSlot)]
-    )
-    const memberSlot = ethers.keccak256(encodedMember)
-    await setStorageAt(authControlL1BridgeRegistry.target.toString(), memberSlot, ethers.zeroPadValue('0x01', 32))
+    await setAdmin(authControlL1BridgeRegistry.target, admin)
 
     await authControlL1BridgeRegistry.addManager(manager)
     await authControlL1BridgeRegistry.connect(manager).addRegistrant(registrant)
@@ -151,15 +144,13 @@ describe('AuthControlL1BridgeRegistry', () => {
 
   describe('Test for transferAdmin', () => {
     it('should fail when non-admin tries to transfer admin role', async () => {
-      await expect(authControlL1BridgeRegistry.connect(nonAdmin).transferAdmin(newAdmin.address)).to.be.revertedWith(
+      await expect(authControlL1BridgeRegistry.connect(nonAdmin).transferAdmin(newAdmin)).to.be.revertedWith(
         'AuthControl: Caller is not an admin'
       )
     })
 
     it('should fail when transfer admin role to same address', async () => {
-      await expect(authControlL1BridgeRegistry.transferAdmin(admin.address)).to.be.revertedWith(
-        'Accessible: same admin'
-      )
+      await expect(authControlL1BridgeRegistry.transferAdmin(admin)).to.be.revertedWith('Accessible: same admin')
     })
 
     it('should fail when transfer admin role to zero address', async () => {
@@ -169,12 +160,12 @@ describe('AuthControlL1BridgeRegistry', () => {
     })
 
     it('should fail when transfer admin role to admin', async () => {
-      await authControlL1BridgeRegistry.addAdmin(newAdmin.address)
-      await expect(authControlL1BridgeRegistry.transferAdmin(newAdmin.address)).to.be.revertedWith('already granted')
+      await authControlL1BridgeRegistry.addAdmin(newAdmin)
+      await expect(authControlL1BridgeRegistry.transferAdmin(newAdmin)).to.be.revertedWith('already granted')
     })
 
     it('should transfer admin role', async () => {
-      await authControlL1BridgeRegistry.transferAdmin(newAdmin.address)
+      await authControlL1BridgeRegistry.transferAdmin(newAdmin)
       expect(await authControlL1BridgeRegistry.isAdmin(newAdmin)).to.equal(true)
       expect(await authControlL1BridgeRegistry.isAdmin(admin)).to.equal(false)
     })

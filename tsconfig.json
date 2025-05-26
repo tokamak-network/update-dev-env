@@ -10,7 +10,9 @@
     "resolveJsonModule": true,
     "paths": {
       "@/fixtures": ["./utils/fixtures"],
-      "@utils": ["./utils"]
+      "@utils/*": ["./utils/*"],
+      "@factories/*": ["typechain-types/factories/contracts/*"],
+      "@contracts/*": ["typechain-types/contracts/*"]
     }
   }
 }
