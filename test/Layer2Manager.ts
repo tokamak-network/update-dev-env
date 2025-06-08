@@ -1,8 +1,8 @@
 import type { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { impersonateAccount, loadFixture, setBalance, setStorageAt } from '@nomicfoundation/hardhat-network-helpers'
-import { getRandomAddresses } from '@utils'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { getRandomAddresses } from '../utils'
 
 describe('Layer2ManagerV1_1 Test', () => {
   let owner: HardhatEthersSigner

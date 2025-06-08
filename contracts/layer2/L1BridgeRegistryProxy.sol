@@ -8,6 +8,4 @@ import "./L1BridgeRegistryStorage.sol";
  * @title
  * @dev
  */
-contract L1BridgeRegistryProxy is ProxyL1BridgeRegistry, L1BridgeRegistryStorage {
-
-}
+contract L1BridgeRegistryProxy is ProxyL1BridgeRegistry, L1BridgeRegistryStorage {}

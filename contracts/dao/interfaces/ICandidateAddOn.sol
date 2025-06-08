@@ -11,4 +11,3 @@ interface ICandidateAddOn {
         address _wton
     ) external;
 }
-

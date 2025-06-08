@@ -5,11 +5,7 @@ import {ICandidate} from "../dao/interfaces/ICandidate.sol";
 import {MockCandidateAddOn} from "./MockCandidateAddOn.sol";
 
 contract MockDaoCommittee {
-    event ClaimedActivityReward(
-        address indexed candidate,
-        address receiver,
-        uint256 amount
-    );
+    event ClaimedActivityReward(address indexed candidate, address receiver, uint256 amount);
 
     function changeMember(uint256 _memberIndex) external returns (bool) {
         return true;
@@ -19,11 +15,7 @@ contract MockDaoCommittee {
         return true;
     }
 
-    function castVote(
-        uint256 _agendaID,
-        uint256 _vote,
-        string calldata _comment
-    ) external {
+    function castVote(uint256 _agendaID, uint256 _vote, string calldata _comment) external {
         return;
     }
 
@@ -33,10 +25,7 @@ contract MockDaoCommittee {
         return;
     }
 
-    function createCandidateAddOn(
-        string calldata _memo,
-        address _operator
-    ) external returns (address) {
+    function createCandidateAddOn(string calldata _memo, address _operator) external returns (address) {
         return address(new MockCandidateAddOn());
     }
 }

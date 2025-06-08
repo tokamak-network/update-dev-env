@@ -53,9 +53,7 @@ contract AccessibleCommon is ERC165Storage, AccessControl {
         return hasRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    )
+    function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual

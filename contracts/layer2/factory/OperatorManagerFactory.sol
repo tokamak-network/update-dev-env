@@ -14,12 +14,7 @@ interface IOperatorManager {
     function transferOwnership(address newOwner) external;
     function transferManager(address addr) external;
     function upgradeTo(address _logic) external;
-    function setAddresses(
-        address _layer2Manager,
-        address _depositManager,
-        address _ton,
-        address _wton
-    ) external;
+    function setAddresses(address _layer2Manager, address _depositManager, address _ton, address _wton) external;
 }
 
 interface IRollupConfig {
@@ -32,7 +27,7 @@ interface IRollupConfig {
  *          2: zero rollupConfig's owner
  *          3: already created Operator
  */
-error CreateError(uint x);
+error CreateError(uint256 x);
 
 contract OperatorManagerFactory is Ownable {
     uint256 private constant CREATE_SALT = 0;
@@ -49,12 +44,7 @@ contract OperatorManagerFactory is Ownable {
      * @param wton              WTON
      * @param layer2Manager     the layer2Manager address
      */
-    event SetAddresses(
-        address depositManager,
-        address ton,
-        address wton,
-        address layer2Manager
-    );
+    event SetAddresses(address depositManager, address ton, address wton, address layer2Manager);
 
     /**
      * @notice Event occurred when changing the operatorManager implementation address
@@ -69,18 +59,10 @@ contract OperatorManagerFactory is Ownable {
      * @param manager           the manager address
      * @param operatorManager   the operatorManager address
      */
-    event CreatedOperatorManager(
-        address rollupConfig,
-        address owner,
-        address manager,
-        address operatorManager
-    );
+    event CreatedOperatorManager(address rollupConfig, address owner, address manager, address operatorManager);
 
     constructor(address _operatorManagerImplementation) {
-        require(
-            _operatorManagerImplementation != address(0),
-            "zero operatorManagerImp"
-        );
+        require(_operatorManagerImplementation != address(0), "zero operatorManagerImp");
         operatorManagerImp = _operatorManagerImplementation;
     }
 
@@ -88,12 +70,11 @@ contract OperatorManagerFactory is Ownable {
      * @notice Change the operatorManager implementation address by Owner
      * @param newOperatorManagerImp the operatorManager implementation address
      */
-    function changeOperatorManagerImp(
-        address newOperatorManagerImp
-    ) external onlyOwner {
+    function changeOperatorManagerImp(address newOperatorManagerImp) external onlyOwner {
         _nonZeroAddress(newOperatorManagerImp);
-        if (operatorManagerImp == newOperatorManagerImp)
+        if (operatorManagerImp == newOperatorManagerImp) {
             revert SameVariableError();
+        }
         operatorManagerImp = newOperatorManagerImp;
 
         emit ChangedOperatorManagerImp(newOperatorManagerImp);
@@ -106,12 +87,10 @@ contract OperatorManagerFactory is Ownable {
      * @param _wton              WTON
      * @param _layer2Manager     the layer2Manager address
      */
-    function setAddresses(
-        address _depositManager,
-        address _ton,
-        address _wton,
-        address _layer2Manager
-    ) external onlyOwner {
+    function setAddresses(address _depositManager, address _ton, address _wton, address _layer2Manager)
+        external
+        onlyOwner
+    {
         require(_depositManager != address(0), "zero _depositManager");
         require(_ton != address(0), "zero _ton");
         require(_wton != address(0), "zero _wton");
@@ -135,9 +114,7 @@ contract OperatorManagerFactory is Ownable {
      *          that is mapped to RollupConfig.
      * @param rollupConfig  the rollupConfig address
      */
-    function createOperatorManager(
-        address rollupConfig
-    ) external returns (address operatorManager) {
+    function createOperatorManager(address rollupConfig) external returns (address operatorManager) {
         if (msg.sender != layer2Manager) revert CreateError(1);
         require(getAddress(rollupConfig).code.length == 0, "already created");
 
@@ -145,24 +122,12 @@ contract OperatorManagerFactory is Ownable {
         if (sManager == address(0)) revert CreateError(2);
 
         address sOwner = owner();
-        operatorManager = address(
-            new OperatorManagerProxy{salt: bytes32(CREATE_SALT)}(rollupConfig)
-        );
+        operatorManager = address(new OperatorManagerProxy{salt: bytes32(CREATE_SALT)}(rollupConfig));
         IOperatorManager(operatorManager).upgradeTo(operatorManagerImp);
-        IOperatorManager(operatorManager).setAddresses(
-            msg.sender,
-            depositManager,
-            ton,
-            wton
-        );
+        IOperatorManager(operatorManager).setAddresses(msg.sender, depositManager, ton, wton);
         IOperatorManager(operatorManager).transferManager(sManager);
         IOperatorManager(operatorManager).transferOwnership(sOwner);
-        emit CreatedOperatorManager(
-            rollupConfig,
-            sOwner,
-            sManager,
-            operatorManager
-        );
+        emit CreatedOperatorManager(rollupConfig, sOwner, sManager, operatorManager);
     }
 
     /**
@@ -170,26 +135,22 @@ contract OperatorManagerFactory is Ownable {
      * @param rollupConfig  the rollupConfig address
      */
     function getAddress(address rollupConfig) public view returns (address) {
-        return
-            address(
-                uint160(
-                    uint(
-                        keccak256(
-                            abi.encodePacked(
-                                bytes1(0xff),
-                                address(this),
-                                CREATE_SALT,
-                                keccak256(
-                                    abi.encodePacked(
-                                        type(OperatorManagerProxy).creationCode,
-                                        abi.encode(rollupConfig)
-                                    )
-                                )
+        return address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            bytes1(0xff),
+                            address(this),
+                            CREATE_SALT,
+                            keccak256(
+                                abi.encodePacked(type(OperatorManagerProxy).creationCode, abi.encode(rollupConfig))
                             )
                         )
                     )
                 )
-            );
+            )
+        );
     }
 
     function _nonZeroAddress(address _addr) internal pure {

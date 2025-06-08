@@ -7,11 +7,7 @@ import "../../proxy/ProxyStorage.sol";
 import {AccessibleCommon} from "../../common/AccessibleCommon.sol";
 import "./CandidateAddOnFactoryStorage.sol";
 
-contract CandidateAddOnFactory is
-    ProxyStorage,
-    AccessibleCommon,
-    CandidateAddOnFactoryStorage
-{
+contract CandidateAddOnFactory is ProxyStorage, AccessibleCommon, CandidateAddOnFactoryStorage {
     /**
      * @notice  Event that occurs when a Candidate is created
      * @param sender            the sender address
@@ -46,22 +42,14 @@ contract CandidateAddOnFactory is
         address _onDemandL1BridgeRegistry
     ) external onlyOwner {
         require(
-            _ton != address(0) &&
-                _wton != address(0) &&
-                _depositManager != address(0) &&
-                _daoCommittee != address(0) &&
-                _candidateAddOnImp != address(0) &&
-                _onDemandL1BridgeRegistry != address(0),
+            _ton != address(0) && _wton != address(0) && _depositManager != address(0) && _daoCommittee != address(0)
+                && _candidateAddOnImp != address(0) && _onDemandL1BridgeRegistry != address(0),
             "zero"
         );
 
         require(
-            ton != _ton ||
-                wton != _wton ||
-                depositManager != _depositManager ||
-                daoCommittee != _daoCommittee ||
-                candidateAddOnImp != _candidateAddOnImp ||
-                onDemandL1BridgeRegistry != _onDemandL1BridgeRegistry,
+            ton != _ton || wton != _wton || depositManager != _depositManager || daoCommittee != _daoCommittee
+                || candidateAddOnImp != _candidateAddOnImp || onDemandL1BridgeRegistry != _onDemandL1BridgeRegistry,
             "same"
         );
 
@@ -82,34 +70,18 @@ contract CandidateAddOnFactory is
      * @param _seigManager  the seigManager address
      * @return              the created candidate address
      */
-    function deploy(
-        address _sender,
-        string memory _name,
-        address _committee,
-        address _seigManager
-    ) public onlyDAOCommittee returns (address) {
+    function deploy(address _sender, string memory _name, address _committee, address _seigManager)
+        public
+        onlyDAOCommittee
+        returns (address)
+    {
         require(daoCommittee == _committee, "different daoCommittee");
         CandidateAddOnProxy c = new CandidateAddOnProxy();
 
         c.upgradeTo(candidateAddOnImp);
-        ICandidateAddOn(address(c)).initialize(
-            _sender,
-            _name,
-            _committee,
-            _seigManager,
-            ton,
-            wton
-        );
+        ICandidateAddOn(address(c)).initialize(_sender, _name, _committee, _seigManager, ton, wton);
         c.transferAdmin(_committee);
-        emit DeployedCandidate(
-            _sender,
-            address(c),
-            _sender,
-            true,
-            _name,
-            _committee,
-            _seigManager
-        );
+        emit DeployedCandidate(_sender, address(c), _sender, true, _name, _committee, _seigManager);
         return address(c);
     }
 }

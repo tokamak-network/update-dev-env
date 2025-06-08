@@ -14,26 +14,13 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDAOCommittee} from "./interfaces/IDAOCommittee.sol";
 
 /// @title Managing a CandidateAddOn
-contract CandidateAddOnV1_1 is
-    ProxyStorage,
-    AccessibleCommon,
-    CandidateAddOnStorage1,
-    CandidateAddOnStorage
-{
+contract CandidateAddOnV1_1 is ProxyStorage, AccessibleCommon, CandidateAddOnStorage1, CandidateAddOnStorage {
     modifier onlyCandidate() {
-        require(
-            IOperateContract(candidate()).isOperator(msg.sender),
-            "sender is not an operator"
-        );
+        require(IOperateContract(candidate()).isOperator(msg.sender), "sender is not an operator");
         _;
     }
 
-    event Initialized(
-        address _operateContract,
-        string memo,
-        address committee,
-        address seigManager
-    );
+    event Initialized(address _operateContract, string memo, address committee, address seigManager);
     event SetMemo(string _memo);
 
     /* ========== onlyOwner ========== */
@@ -45,23 +32,13 @@ contract CandidateAddOnV1_1 is
         address _ton,
         address _wton
     ) external onlyOwner {
+        require(ton() == address(0) && wton() == address(0) && seigManager() == address(0), "Already initialized");
         require(
-            ton() == address(0) &&
-                wton() == address(0) &&
-                seigManager() == address(0),
-            "Already initialized"
-        );
-        require(
-            _operateContract != address(0) ||
-                _committee != address(0) ||
-                _seigManager != address(0),
+            _operateContract != address(0) || _committee != address(0) || _seigManager != address(0),
             "Candidate: input is zero"
         );
 
-        require(
-            IOperateContract(_operateContract).rollupConfig() != address(0),
-            "zero rollupConfig"
-        );
+        require(IOperateContract(_operateContract).rollupConfig() != address(0), "zero rollupConfig");
 
         isLayer2Candidate = true;
         memo = _memo;
@@ -72,9 +49,7 @@ contract CandidateAddOnV1_1 is
         _setStorageAddress(_TON_ADDRESS_SLOT, _ton);
         _setStorageAddress(_WTON_ADDRESS_SLOT, _wton);
 
-        _registerInterface(
-            ICandidate(address(this)).isCandidateContract.selector
-        );
+        _registerInterface(ICandidate(address(this)).isCandidateContract.selector);
         emit Initialized(_operateContract, _memo, _committee, _seigManager);
     }
 
@@ -90,9 +65,7 @@ contract CandidateAddOnV1_1 is
     /// @notice Try to be a member
     /// @param _memberIndex The index of changing member slot
     /// @return Whether or not the execution succeeded
-    function changeMember(
-        uint256 _memberIndex
-    ) external onlyCandidate returns (bool) {
+    function changeMember(uint256 _memberIndex) external onlyCandidate returns (bool) {
         return IDAOCommittee(committee()).changeMember(_memberIndex);
     }
 
@@ -106,11 +79,7 @@ contract CandidateAddOnV1_1 is
     /// @param _agendaID The agenda ID
     /// @param _vote voting type
     /// @param _comment voting comment
-    function castVote(
-        uint256 _agendaID,
-        uint256 _vote,
-        string calldata _comment
-    ) external onlyCandidate {
+    function castVote(uint256 _agendaID, uint256 _vote, string calldata _comment) external onlyCandidate {
         IDAOCommittee(committee()).castVote(_agendaID, _vote, _comment);
     }
 
@@ -126,21 +95,14 @@ contract CandidateAddOnV1_1 is
     /// @notice Call updateSeigniorage on SeigManager
     /// @return             Whether or not the execution succeeded
     function updateSeigniorage() public returns (bool) {
-        require(
-            IISeigManager(seigManager()).updateSeigniorage(),
-            "fail updateSeigniorage"
-        );
+        require(IISeigManager(seigManager()).updateSeigniorage(), "fail updateSeigniorage");
         return true;
     }
 
     /* ========== view ========== */
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override returns (bool) {
-        return
-            _supportedInterfaces[interfaceId] ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return _supportedInterfaces[interfaceId] || super.supportsInterface(interfaceId);
     }
 
     /// @notice Retrieves the total staked balance on this candidate
@@ -172,12 +134,15 @@ contract CandidateAddOnV1_1 is
     function operator() external view returns (address) {
         return candidate();
     }
+
     function isLayer2() external pure returns (bool) {
         return true;
     }
+
     function currentFork() external pure returns (uint256) {
         return 1;
     }
+
     function lastEpoch(uint256 forkNumber) external pure returns (uint256) {
         return 1;
     }

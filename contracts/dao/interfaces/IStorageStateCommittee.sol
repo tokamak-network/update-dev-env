@@ -25,9 +25,7 @@ interface IStorageStateCommittee {
     function candidates(uint256 _index) external returns (address);
     function members(uint256 _index) external returns (address);
     function maxMember() external returns (uint256);
-    function candidateInfos(
-        address _candidate
-    ) external returns (CandidateInfo memory);
+    function candidateInfos(address _candidate) external returns (CandidateInfo memory);
     function quorum() external returns (uint256);
     function activityRewardPerSecond() external returns (uint256);
 

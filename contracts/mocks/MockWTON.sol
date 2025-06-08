@@ -14,8 +14,9 @@ contract MockWTON is ERC20 {
         ton = _ton;
     }
 
-    function mint(address to, uint256 amount) external {
+    function mint(address to, uint256 amount) external returns (bool) {
         _mint(to, amount);
+        return true;
     }
 
     function swapFromTON(uint256 amount) external returns (bool) {

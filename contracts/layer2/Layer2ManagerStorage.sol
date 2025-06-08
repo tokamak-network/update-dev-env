@@ -3,8 +3,7 @@ pragma solidity ^0.8.4;
 
 /// @title
 /// @notice
-contract Layer2ManagerStorage  {
-
+contract Layer2ManagerStorage {
     struct CandidateAddOnInfo {
         address rollupConfig;
         address candidateAddOn;
@@ -25,20 +24,22 @@ contract Layer2ManagerStorage  {
     address public seigManager;
     address public swapProxy;
 
-    uint256 public minimumInitialDepositAmount;   /// ton
+    uint256 public minimumInitialDepositAmount;
+
+    /// ton
 
     /// rollupConfig - SeqSeigStatus
-    mapping (address => SeqSeigStatus) public rollupConfigInfo;
+    mapping(address => SeqSeigStatus) public rollupConfigInfo;
 
     /// operator - CandidateAddOnInfo
-    mapping (address => CandidateAddOnInfo) public operatorInfo;
+    mapping(address => CandidateAddOnInfo) public operatorInfo;
 
     /// layer2 - operator
-    mapping (address => address) public operatorOfLayer;
+    mapping(address => address) public operatorOfLayer;
 
     bool internal _lock;
 
-    modifier ifFree {
+    modifier ifFree() {
         require(!_lock, "lock");
         _lock = true;
         _;

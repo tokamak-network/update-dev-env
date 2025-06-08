@@ -12,18 +12,12 @@ contract AuthControlL1BridgeRegistry is AuthRole, ERC165Storage, AccessControl {
     }
 
     modifier onlyManager() {
-        require(
-            hasRole(MANAGER_ROLE, msg.sender),
-            "AuthControl: Caller is not a manager"
-        );
+        require(hasRole(MANAGER_ROLE, msg.sender), "AuthControl: Caller is not a manager");
         _;
     }
 
     modifier onlyRegistrant() {
-        require(
-            hasRole(REGISTRANT_ROLE, msg.sender),
-            "AuthControl: Caller is not a registrant"
-        );
+        require(hasRole(REGISTRANT_ROLE, msg.sender), "AuthControl: Caller is not a registrant");
         _;
     }
 
@@ -114,9 +108,7 @@ contract AuthControlL1BridgeRegistry is AuthRole, ERC165Storage, AccessControl {
         return hasRole(REGISTRANT_ROLE, account);
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    )
+    function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual

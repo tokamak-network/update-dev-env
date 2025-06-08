@@ -19,11 +19,16 @@ interface ISeigManager {
     function DEFAULT_FACTOR() external view returns (uint256);
 
     function deployCoinage(address layer2) external returns (bool);
-    function setCommissionRate(address layer2, uint256 commission, bool isCommissionRateNegative) external returns (bool);
+    function setCommissionRate(address layer2, uint256 commission, bool isCommissionRateNegative)
+        external
+        returns (bool);
 
     function uncomittedStakeOf(address layer2, address account) external view returns (uint256);
     function stakeOf(address layer2, address account) external view returns (uint256);
-    function additionalTotBurnAmount(address layer2, address account, uint256 amount) external view returns (uint256 totAmount);
+    function additionalTotBurnAmount(address layer2, address account, uint256 amount)
+        external
+        view
+        returns (uint256 totAmount);
 
     function onTransfer(address sender, address recipient, uint256 amount) external returns (bool);
     function updateSeigniorage() external returns (bool);
@@ -32,5 +37,4 @@ interface ISeigManager {
 
     function getOperatorAmount(address layer2) external view returns (uint256);
     function minimumAmount() external view returns (uint256);
-
 }

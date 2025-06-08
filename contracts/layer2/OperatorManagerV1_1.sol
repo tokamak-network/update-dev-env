@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
 import {IWTON} from "../stake/interfaces/IWTON.sol";
 import {IRollupConfig} from "../layer2/interfaces/IRollupConfig.sol";
 import {ILayer2Manager} from "../layer2/interfaces/ILayer2Manager.sol";
@@ -52,12 +53,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
      * @param _ton              the TON address
      * @param _wton             the WTON address
      */
-    event SetAddresses(
-        address _layer2Manager,
-        address _depositManager,
-        address _ton,
-        address _wton
-    );
+    event SetAddresses(address _layer2Manager, address _depositManager, address _ton, address _wton);
 
     /**
      * @notice Event occurs when the claim token
@@ -95,10 +91,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
     event ProcessRequests(address candidate, uint256 n);
 
     modifier onlyOwnerOrManager() {
-        require(
-            owner() == msg.sender || msg.sender == manager(),
-            "not onlyOwnerOrManager"
-        );
+        require(owner() == msg.sender || msg.sender == manager(), "not onlyOwnerOrManager");
         _;
     }
 
@@ -109,12 +102,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
      * @param _ton              the TON address
      * @param _wton             the WTON address
      */
-    function setAddresses(
-        address _layer2Manager,
-        address _depositManager,
-        address _ton,
-        address _wton
-    )
+    function setAddresses(address _layer2Manager, address _depositManager, address _ton, address _wton)
         external
         nonZeroAddress(_layer2Manager)
         nonZeroAddress(_depositManager)
@@ -138,9 +126,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
      * @notice Transfer the manager
      * @param newManager    the new manager address
      */
-    function transferManager(
-        address newManager
-    ) external nonZeroAddress(newManager) onlyOwnerOrManager {
+    function transferManager(address newManager) external nonZeroAddress(newManager) onlyOwnerOrManager {
         address _manager = manager();
         if (_manager == newManager) revert SameAddressError();
 
@@ -160,10 +146,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
      * @param token     the token address
      * @param amount    the amount claimed token
      */
-    function claimERC20(
-        address token,
-        uint256 amount
-    ) external onlyOwnerOrManager {
+    function claimERC20(address token, uint256 amount) external onlyOwnerOrManager {
         _claim(token, manager(), amount);
     }
 
@@ -172,49 +155,48 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
      * @param amount    the amount requesting withdrawal
      */
     function requestWithdrawal(uint256 amount) external onlyOwnerOrManager {
-        address candidate = ILayer2Manager(layer2Manager())
-            .candidateAddOnOfOperator(address(this));
+        address candidate = ILayer2Manager(layer2Manager()).candidateAddOnOfOperator(address(this));
 
-        require(
-            IDepositManager(depositManager()).requestWithdrawal(
-                candidate,
-                amount
-            ),
-            "fail requestWithdraw"
-        );
+        // require(
+        //     IDepositManager(depositManager()).requestWithdrawal(
+        //         candidate,
+        //         amount
+        //     ),
+        //     "fail requestWithdraw"
+        // );
+        IDepositManager(depositManager()).requestWithdrawal(candidate, amount);
 
         emit RequestWithdrawal(candidate, amount);
     }
 
     function processRequest() external onlyOwnerOrManager {
-        address candidate = ILayer2Manager(layer2Manager())
-            .candidateAddOnOfOperator(address(this));
+        address candidate = ILayer2Manager(layer2Manager()).candidateAddOnOfOperator(address(this));
 
-        require(
-            IDepositManager(depositManager()).processRequest(candidate, false),
-            "fail processRequest"
-        );
-
+        // require(
+        //     IDepositManager(depositManager()).processRequest(candidate, false),
+        //     "fail processRequest"
+        // );
+        IDepositManager(depositManager()).processRequest(candidate, false);
         emit ProcessRequest(candidate);
     }
 
     function processRequests(uint256 n) external onlyOwnerOrManager {
-        address candidate = ILayer2Manager(layer2Manager())
-            .candidateAddOnOfOperator(address(this));
+        address candidate = ILayer2Manager(layer2Manager()).candidateAddOnOfOperator(address(this));
 
-        require(
-            IDepositManager(depositManager()).processRequests(
-                candidate,
-                n,
-                false
-            ),
-            "fail processRequests"
-        );
+        // require(
+        //     IDepositManager(depositManager()).processRequests(
+        //         candidate,
+        //         n,
+        //         false
+        //     ),
+        //     "fail processRequests"
+        // );
+        IDepositManager(depositManager()).processRequests(candidate, n, false);
 
         emit ProcessRequests(candidate, n);
     }
 
-    /* ========== public ========== */
+    // /* ========== public ========== */
 
     /**
      * @notice acquire manager privileges.
@@ -222,10 +204,7 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
     function acquireManager() external {
         address _manager = manager();
         require(msg.sender != _manager, "already manager");
-        require(
-            msg.sender == IRollupConfig(rollupConfig()).unsafeBlockSigner(),
-            "not config's seigniorageReceiver"
-        );
+        require(msg.sender == IRollupConfig(rollupConfig()).unsafeBlockSigner(), "not config's seigniorageReceiver");
 
         _setStorageAddress(_MANAGER_SLOT, msg.sender);
         emit TransferredManager(_manager, msg.sender);
@@ -266,19 +245,18 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
             bool rejectedL2Deposit
         )
     {
-        return
-            ILayer2Manager(layer2Manager()).checkL1BridgeDetail(rollupConfig());
+        return ILayer2Manager(layer2Manager()).checkL1BridgeDetail(rollupConfig());
     }
 
     function operator() external view returns (address) {
         return manager();
     }
 
-    /* ========== internal ========== */
+    // /* ========== internal ========== */
 
-    function _nonZeroAddress(address _addr) internal pure {
-        if (_addr == address(0)) revert ZeroAddressError();
-    }
+    // function _nonZeroAddress(address _addr) internal pure {
+    //     if (_addr == address(0)) revert ZeroAddressError();
+    // }
 
     function _alreadySet(address _addr) internal pure {
         if (_addr != address(0)) revert AlreadySetError();
@@ -286,33 +264,35 @@ contract OperatorManagerV1_1 is Ownable, OperatorManagerStorage {
 
     function _claim(address token, address to, uint256 amount) internal {
         if (token == address(0)) {
-            if (address(this).balance < amount)
+            if (address(this).balance < amount) {
                 revert InsufficientBalanceError();
-            (bool success, ) = to.call{value: amount}("");
+            }
+            (bool success,) = to.call{value: amount}("");
             if (!success) revert TransferEthError();
         } else {
-            if (IERC20(token).balanceOf(address(this)) < amount)
+            if (IERC20(token).balanceOf(address(this)) < amount) {
                 revert InsufficientBalanceError();
+            }
             IERC20(token).safeTransfer(to, amount);
         }
         emit Claimed(token, msg.sender, to, amount);
     }
 
-    function _depositTo(address layer2, address to) internal {
-        address _depositManager = depositManager();
-        uint256 amount = _onAapproveHoldingAmount(_depositManager);
-        if (amount != 0)
-            IDepositManager(_depositManager).deposit(layer2, to, amount);
-    }
+    // // function _depositTo(address layer2, address to) internal {
+    // //     address _depositManager = depositManager();
+    // //     uint256 amount = _onAapproveHoldingAmount(_depositManager);
+    // //     if (amount != 0)
+    // //         IDepositManager(_depositManager).deposit(layer2, to, amount);
+    // // }
 
-    function _onAapproveHoldingAmount(address to) internal returns (uint256) {
-        address _wton = wton();
-        uint256 amount = IERC20(_wton).balanceOf(address(this));
-        if (amount != 0) {
-            uint256 allowance = IERC20(_wton).allowance(address(this), to);
-            if (allowance < amount)
-                IERC20(_wton).approve(to, type(uint256).max);
-        }
-        return amount;
-    }
+    // // function _onAapproveHoldingAmount(address to) internal returns (uint256) {
+    // //     address _wton = wton();
+    // //     uint256 amount = IERC20(_wton).balanceOf(address(this));
+    // //     if (amount != 0) {
+    // //         uint256 allowance = IERC20(_wton).allowance(address(this), to);
+    // //         if (allowance < amount)
+    // //             IERC20(_wton).approve(to, type(uint256).max);
+    // //     }
+    // //     return amount;
+    // // }
 }

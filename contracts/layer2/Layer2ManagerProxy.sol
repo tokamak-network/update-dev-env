@@ -8,6 +8,4 @@ import "./Layer2ManagerStorage.sol";
  * @title
  * @dev
  */
-contract Layer2ManagerProxy is Proxy, Layer2ManagerStorage {
-
-}
+contract Layer2ManagerProxy is Proxy, Layer2ManagerStorage {}

@@ -10,8 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice
 contract OperatorManagerProxy is Proxy, ERC1967Upgrade, Ownable {
     // uint256(keccak256("ROLLUP_CONFIG")) - 1
-    uint256 private constant _ROLLUP_CONFIG_SLOT =
-        0xd8bedf058aa85a36377d4cf75d156448984f1301b93d1653448986b1166437d6;
+    uint256 private constant _ROLLUP_CONFIG_SLOT = 0xd8bedf058aa85a36377d4cf75d156448984f1301b93d1653448986b1166437d6;
 
     constructor(address _rollupConfig) {
         require(_rollupConfig != address(0), "zero rollupConfig");
@@ -28,10 +27,7 @@ contract OperatorManagerProxy is Proxy, ERC1967Upgrade, Ownable {
         _upgradeTo(newImplementation);
     }
 
-    function upgradeToAndCall(
-        address _logic,
-        bytes memory _data
-    ) external onlyOwner {
+    function upgradeToAndCall(address _logic, bytes memory _data) external onlyOwner {
         _upgradeToAndCall(_logic, _data, false);
     }
 
@@ -42,13 +38,7 @@ contract OperatorManagerProxy is Proxy, ERC1967Upgrade, Ownable {
     /**
      * @dev Returns the current implementation address.
      */
-    function _implementation()
-        internal
-        view
-        virtual
-        override
-        returns (address impl)
-    {
+    function _implementation() internal view virtual override returns (address impl) {
         return ERC1967Upgrade._getImplementation();
     }
 }

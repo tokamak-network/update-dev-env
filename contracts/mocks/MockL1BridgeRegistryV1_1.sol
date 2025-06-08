@@ -9,7 +9,10 @@ contract MockL1BridgeRegistryV1_1 {
         bool rejectedL2Deposit;
         string name;
     }
+
     mapping(address => RollupInfo) public rollupInfo;
+
+    mapping(address => uint256) public layer2TVL;
 
     function setRollupInfo(
         address rollupConfig,
@@ -19,31 +22,17 @@ contract MockL1BridgeRegistryV1_1 {
         bool rejectedL2Deposit,
         string memory name
     ) external {
-        rollupInfo[rollupConfig] = RollupInfo(
-            rollupType,
-            l2TON,
-            rejectedSeigs,
-            rejectedL2Deposit,
-            name
-        );
+        rollupInfo[rollupConfig] = RollupInfo(rollupType, l2TON, rejectedSeigs, rejectedL2Deposit, name);
     }
 
     function rollupType(address rollupConfig) external view returns (uint8) {
         return rollupInfo[rollupConfig].rollupType;
     }
 
-    function getRollupInfo(
-        address rollupConfig
-    )
+    function getRollupInfo(address rollupConfig)
         external
         view
-        returns (
-            uint8 type_,
-            address l2TON_,
-            bool rejectedSeigs_,
-            bool rejectedL2Deposit_,
-            string memory name_
-        )
+        returns (uint8 type_, address l2TON_, bool rejectedSeigs_, bool rejectedL2Deposit_, string memory name_)
     {
         return (
             rollupInfo[rollupConfig].rollupType,
@@ -56,5 +45,9 @@ contract MockL1BridgeRegistryV1_1 {
 
     function l2TON(address rollupConfig) external view returns (address) {
         return rollupInfo[rollupConfig].l2TON;
+    }
+
+    function setLayer2TVL(address rollupConfig, uint256 layer2TVL_) external {
+        layer2TVL[rollupConfig] = layer2TVL_;
     }
 }

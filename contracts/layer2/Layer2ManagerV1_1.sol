@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
+
 import {IIDAOCommittee} from "../dao/interfaces/IIDAOCommittee.sol";
 import {IOperatorManagerFactory} from "../layer2/interfaces/IOperatorManagerFactory.sol";
 import {IL1BridgeRegistry} from "../layer2/interfaces/IL1BridgeRegistry.sol";
@@ -14,6 +16,8 @@ import {IIDepositManager} from "../stake/interfaces/IIDepositManager.sol";
 import {ISeigManager} from "../stake/interfaces/ISeigManager.sol";
 import {ITON} from "../stake/interfaces/ITON.sol";
 import {IWTON} from "../stake/interfaces/IWTON.sol";
+
+import "hardhat/console.sol";
 
 import "./Layer2ManagerStorage.sol";
 import "../proxy/ProxyStorage.sol";
@@ -33,7 +37,7 @@ import {SafeERC20} from "../libraries/SafeERC20.sol";
  *          7: fail to swap ton to wton
  *          8: wrong data length
  */
-error RegisterError(uint x);
+error RegisterError(uint256 x);
 error ZeroAddressError();
 error ZeroBytesError(); // memo check
 error SameValueError();
@@ -46,18 +50,13 @@ error IncludeError();
  *          2: wrong spender parameter
  *          3: wrong data parameter length
  */
-error OnApproveError(uint x);
+error OnApproveError(uint256 x);
 
-contract Layer2ManagerV1_1 is
-    ProxyStorage,
-    AccessibleCommon,
-    Layer2ManagerStorage
-{
+contract Layer2ManagerV1_1 is ProxyStorage, AccessibleCommon, Layer2ManagerStorage {
     /* ========== DEPENDENCIES ========== */
     using SafeERC20 for IERC20;
 
-    address internal constant LEGACY_ERC20_NATIVE_TOKEN =
-        0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000;
+    address internal constant LEGACY_ERC20_NATIVE_TOKEN = 0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000;
 
     event SetAddresses(
         address _l2Register,
@@ -85,11 +84,7 @@ contract Layer2ManagerV1_1 is
      * @param candidateAddOn    a candidateAddOn address
      */
     event RegisteredCandidateAddOn(
-        address rollupConfig,
-        uint256 wtonAmount,
-        string memo,
-        address operator,
-        address candidateAddOn
+        address rollupConfig, uint256 wtonAmount, string memo, address operator, address candidateAddOn
     );
 
     /**
@@ -126,10 +121,7 @@ contract Layer2ManagerV1_1 is
     }
 
     modifier onlyL1BridgeRegistry() {
-        require(
-            l1BridgeRegistry == msg.sender,
-            "sender is not a L1BridgeRegistry"
-        );
+        require(l1BridgeRegistry == msg.sender, "sender is not a L1BridgeRegistry");
         _;
     }
 
@@ -157,20 +149,11 @@ contract Layer2ManagerV1_1 is
         swapProxy = _swapProxy;
 
         emit SetAddresses(
-            _l1BridgeRegistry,
-            _operatorManagerFactory,
-            _ton,
-            _wton,
-            _dao,
-            _depositManager,
-            _seigManager,
-            _swapProxy
+            _l1BridgeRegistry, _operatorManagerFactory, _ton, _wton, _dao, _depositManager, _seigManager, _swapProxy
         );
     }
 
-    function setOperatorManagerFactory(
-        address _operatorManagerFactory
-    ) external onlyOwner {
+    function setOperatorManagerFactory(address _operatorManagerFactory) external onlyOwner {
         require(operatorManagerFactory != _operatorManagerFactory, "same");
         operatorManagerFactory = _operatorManagerFactory;
         emit SetOperatorManagerFactory(_operatorManagerFactory);
@@ -181,13 +164,8 @@ contract Layer2ManagerV1_1 is
      *          Due to calculating swton, it is recommended to set DepositManager's minimum deposit + 0.1 TON
      * @param   _minimumInitialDepositAmount the minimum initial deposit amount
      */
-    function setMinimumInitialDepositAmount(
-        uint256 _minimumInitialDepositAmount
-    ) external onlyOwner {
-        require(
-            minimumInitialDepositAmount != _minimumInitialDepositAmount,
-            "same"
-        );
+    function setMinimumInitialDepositAmount(uint256 _minimumInitialDepositAmount) external onlyOwner {
+        require(minimumInitialDepositAmount != _minimumInitialDepositAmount, "same");
         minimumInitialDepositAmount = _minimumInitialDepositAmount;
 
         emit SetMinimumInitialDepositAmount(_minimumInitialDepositAmount);
@@ -199,9 +177,7 @@ contract Layer2ManagerV1_1 is
      * @notice Pause the CandidateAddOn
      * @param rollupConfig the rollupConfig address
      */
-    function pauseCandidateAddOn(
-        address rollupConfig
-    ) external onlyL1BridgeRegistry ifFree {
+    function pauseCandidateAddOn(address rollupConfig) external onlyL1BridgeRegistry ifFree {
         SeqSeigStatus memory info = rollupConfigInfo[rollupConfig];
         // require(info.stateIssue == 1, "not in normal status");
         if (info.status != 1) revert StatusError();
@@ -209,8 +185,9 @@ contract Layer2ManagerV1_1 is
         address _layer2 = operatorInfo[info.operatorManager].candidateAddOn;
         _nonZeroAddress(_layer2);
 
-        if (!ISeigManager(seigManager).excludeFromL2Seigniorage(_layer2))
+        if (!ISeigManager(seigManager).excludeFromL2Seigniorage(_layer2)) {
             revert ExcludeError();
+        }
 
         rollupConfigInfo[rollupConfig].status = 2;
         emit PausedCandidateAddOn(rollupConfig, _layer2);
@@ -220,9 +197,7 @@ contract Layer2ManagerV1_1 is
      * @notice Unpause the CandidateAddOn
      * @param rollupConfig the rollupConfig address
      */
-    function unpauseCandidateAddOn(
-        address rollupConfig
-    ) external onlyL1BridgeRegistry ifFree {
+    function unpauseCandidateAddOn(address rollupConfig) external onlyL1BridgeRegistry ifFree {
         SeqSeigStatus memory info = rollupConfigInfo[rollupConfig];
         // require(info.stateIssue == 2, "not in pause status");
         if (info.status != 2) revert StatusError();
@@ -231,13 +206,11 @@ contract Layer2ManagerV1_1 is
         _nonZeroAddress(_layer2);
 
         rollupConfigInfo[rollupConfig].status = 1;
-        emit UnpausedCandidateAddOn(
-            rollupConfig,
-            operatorInfo[info.operatorManager].candidateAddOn
-        );
+        emit UnpausedCandidateAddOn(rollupConfig, operatorInfo[info.operatorManager].candidateAddOn);
 
-        if (!ISeigManager(seigManager).includeFromL2Seigniorage(_layer2))
+        if (!ISeigManager(seigManager).includeFromL2Seigniorage(_layer2)) {
             revert IncludeError();
+        }
     }
 
     /* ========== onlySeigManger  ========== */
@@ -247,10 +220,7 @@ contract Layer2ManagerV1_1 is
      * @param layer2 the layer2 address
      * @param amount the amount to give a seigniorage
      */
-    function transferL2Seigniorage(
-        address layer2,
-        uint256 amount
-    ) external onlySeigManger {
+    function transferL2Seigniorage(address layer2, uint256 amount) external onlySeigManger {
         address operator = operatorOfLayer[layer2];
         require(operator != address(0), "wrong operator");
 
@@ -268,16 +238,14 @@ contract Layer2ManagerV1_1 is
      * @param flagTon          if true, amount is ton, otherwise it wton
      * @param memo             layer's name
      */
-    function registerCandidateAddOn(
-        address rollupConfig,
-        uint256 amount,
-        bool flagTon,
-        string calldata memo
-    ) external {
+    function registerCandidateAddOn(address rollupConfig, uint256 amount, bool flagTon, string calldata memo)
+        external
+    {
         _nonZeroAddress(rollupConfig);
         if (bytes(memo).length == 0) revert ZeroBytesError();
-        if (rollupConfigInfo[rollupConfig].operatorManager != address(0))
+        if (rollupConfigInfo[rollupConfig].operatorManager != address(0)) {
             revert RegisterError(4);
+        }
 
         if (!_availableRegister(rollupConfig)) revert RegisterError(5);
         _transferDepositAmount(msg.sender, rollupConfig, amount, flagTon, memo);
@@ -289,12 +257,7 @@ contract Layer2ManagerV1_1 is
     /// @param amount   Approved amount
     /// @param data     Data used in OnApprove contract
     /// @return bool    true
-    function onApprove(
-        address owner,
-        address spender,
-        uint256 amount,
-        bytes calldata data
-    ) external returns (bool) {
+    function onApprove(address owner, address spender, uint256 amount, bytes calldata data) external returns (bool) {
         if (msg.sender != ton && msg.sender != wton) revert OnApproveError(1);
 
         if (spender != address(this)) revert OnApproveError(2);
@@ -310,30 +273,20 @@ contract Layer2ManagerV1_1 is
 
         _nonZeroAddress(_rollupConfig);
 
-        if (rollupConfigInfo[_rollupConfig].operatorManager != address(0))
+        if (rollupConfigInfo[_rollupConfig].operatorManager != address(0)) {
             revert RegisterError(4);
+        }
 
         if (!_availableRegister(_rollupConfig)) revert RegisterError(5);
 
         // if (msg.sender == ton) _transferDepositAmount(owner, _rollupConfig, amount, true, string(bytes(data[20:])));
         // else _transferDepositAmount(owner, _rollupConfig, amount, false, string(bytes(data[20:])));
 
-        if (msg.sender == ton)
-            _transferDepositAmount(
-                owner,
-                _rollupConfig,
-                amount,
-                true,
-                string(_message)
-            );
-        else
-            _transferDepositAmount(
-                owner,
-                _rollupConfig,
-                amount,
-                false,
-                string(_message)
-            );
+        if (msg.sender == ton) {
+            _transferDepositAmount(owner, _rollupConfig, amount, true, string(_message));
+        } else {
+            _transferDepositAmount(owner, _rollupConfig, amount, false, string(_message));
+        }
 
         return true;
     }
@@ -345,9 +298,7 @@ contract Layer2ManagerV1_1 is
      * @param _oper     the operator address
      * @return          the rollupConfig address
      */
-    function rollupConfigOfOperator(
-        address _oper
-    ) external view returns (address) {
+    function rollupConfigOfOperator(address _oper) external view returns (address) {
         return operatorInfo[_oper].rollupConfig;
     }
 
@@ -356,9 +307,7 @@ contract Layer2ManagerV1_1 is
      * @param _rollupConfig      the rollupConfig address
      * @return          the operator address
      */
-    function operatorOfRollupConfig(
-        address _rollupConfig
-    ) external view returns (address) {
+    function operatorOfRollupConfig(address _rollupConfig) external view returns (address) {
         return rollupConfigInfo[_rollupConfig].operatorManager;
     }
 
@@ -367,9 +316,7 @@ contract Layer2ManagerV1_1 is
      * @param _oper     the operator address
      * @return          the candidateAddOn address
      */
-    function candidateAddOnOfOperator(
-        address _oper
-    ) external view returns (address) {
+    function candidateAddOnOfOperator(address _oper) external view returns (address) {
         return operatorInfo[_oper].candidateAddOn;
     }
 
@@ -389,9 +336,7 @@ contract Layer2ManagerV1_1 is
      * @return result       whether layer 2 TON liquidity can be checked
      * @return amount       the layer 2's TON amount (total value liquidity)
      */
-    function checkLayer2TVL(
-        address _rollupConfig
-    ) public view returns (bool result, uint256 amount) {
+    function checkLayer2TVL(address _rollupConfig) public view returns (bool result, uint256 amount) {
         return _checkLayer2TVL(_rollupConfig);
     }
 
@@ -403,33 +348,26 @@ contract Layer2ManagerV1_1 is
      * @return portal           the optimism portal address
      * @return l2Ton            the L2 TON address
      */
-    function checkL1Bridge(
-        address _rollupConfig
-    )
+    function checkL1Bridge(address _rollupConfig)
         public
         view
         returns (bool result, address l1Bridge, address portal, address l2Ton)
     {
-        (result, l1Bridge, portal, l2Ton, , , , ) = _checkL1BridgeDetail(
-            _rollupConfig
-        );
+        (result, l1Bridge, portal, l2Ton,,,,) = _checkL1BridgeDetail(_rollupConfig);
     }
 
-    function availableRegister(
-        address _rollupConfig
-    ) external view returns (bool result) {
+    function availableRegister(address _rollupConfig) external view returns (bool result) {
         return _availableRegister(_rollupConfig);
     }
 
-    function verifyOperator(
-        address layer2,
-        address _rollupConfig,
-        address _operator
-    ) external view returns (bool verified) {
+    function verifyOperator(address layer2, address _rollupConfig, address _operator)
+        external
+        view
+        returns (bool verified)
+    {
         if (
-            operatorOfLayer[layer2] == _operator &&
-            operatorInfo[_operator].rollupConfig == _rollupConfig &&
-            rollupConfigInfo[_rollupConfig].operatorManager == _operator
+            operatorOfLayer[layer2] == _operator && operatorInfo[_operator].rollupConfig == _rollupConfig
+                && rollupConfigInfo[_rollupConfig].operatorManager == _operator
         ) verified = true;
     }
 
@@ -445,9 +383,7 @@ contract Layer2ManagerV1_1 is
      * @return rejectedSeigs     If it is true, Seigniorage issuance has been stopped for this layer2.
      * @return rejectedL2Deposit If it is true, stop depositing at this layer.
      */
-    function checkL1BridgeDetail(
-        address _rollupConfig
-    )
+    function checkL1BridgeDetail(address _rollupConfig)
         external
         view
         returns (
@@ -461,21 +397,11 @@ contract Layer2ManagerV1_1 is
             bool rejectedL2Deposit
         )
     {
-        (
-            result,
-            l1Bridge,
-            portal,
-            l2Ton,
-            _type,
-            status,
-            rejectedSeigs,
-            rejectedL2Deposit
-        ) = _checkL1BridgeDetail(_rollupConfig);
+        (result, l1Bridge, portal, l2Ton, _type, status, rejectedSeigs, rejectedL2Deposit) =
+            _checkL1BridgeDetail(_rollupConfig);
     }
 
-    function _checkL1BridgeDetail(
-        address _rollupConfig
-    )
+    function _checkL1BridgeDetail(address _rollupConfig)
         internal
         view
         returns (
@@ -489,21 +415,16 @@ contract Layer2ManagerV1_1 is
             bool rejectedL2Deposit
         )
     {
-        (_type, , rejectedSeigs, rejectedL2Deposit, ) = IL1BridgeRegistry(
-            l1BridgeRegistry
-        ).getRollupInfo(_rollupConfig);
+        (_type,, rejectedSeigs, rejectedL2Deposit,) = IL1BridgeRegistry(l1BridgeRegistry).getRollupInfo(_rollupConfig);
 
         status = rollupConfigInfo[_rollupConfig].status;
 
         if (rollupConfigInfo[_rollupConfig].status == 1) {
-            address l1Bridge_ = IOptimismSystemConfig(_rollupConfig)
-                .l1StandardBridge();
-
+            address l1Bridge_ = IOptimismSystemConfig(_rollupConfig).l1StandardBridge();
             if (l1Bridge_ != address(0)) {
-                if (_type == 1 || _type == 2)
-                    l2Ton = IL1BridgeRegistry(l1BridgeRegistry).l2TON(
-                        _rollupConfig
-                    );
+                if (_type == 1 || _type == 2) {
+                    l2Ton = IL1BridgeRegistry(l1BridgeRegistry).l2TON(_rollupConfig);
+                }
 
                 if (l2Ton != address(0)) {
                     result = true;
@@ -512,8 +433,7 @@ contract Layer2ManagerV1_1 is
             }
 
             if (_type == 2) {
-                address portal_ = IOptimismSystemConfig(_rollupConfig)
-                    .optimismPortal();
+                address portal_ = IOptimismSystemConfig(_rollupConfig).optimismPortal();
 
                 if (portal_ == address(0)) result = false;
                 else portal = portal_;
@@ -521,9 +441,7 @@ contract Layer2ManagerV1_1 is
         }
     }
 
-    function layerInfo(
-        address layer2
-    ) external view returns (address rollupConfig, address operator) {
+    function layerInfo(address layer2) external view returns (address rollupConfig, address operator) {
         operator = operatorOfLayer[layer2];
         rollupConfig = operatorInfo[operator].rollupConfig;
     }
@@ -534,80 +452,42 @@ contract Layer2ManagerV1_1 is
         if (_addr == address(0)) revert ZeroAddressError();
     }
 
-    function _registerCandidateAddOn(
-        address _rollupConfig,
-        uint256 _wtonAmount,
-        string calldata _memo
-    ) internal {
-        address operator = IOperatorManagerFactory(operatorManagerFactory)
-            .createOperatorManager(_rollupConfig);
-
+    function _registerCandidateAddOn(address _rollupConfig, uint256 _wtonAmount, string calldata _memo) internal {
+        address operator = IOperatorManagerFactory(operatorManagerFactory).createOperatorManager(_rollupConfig);
         if (operator == address(0)) revert RegisterError(1);
-        if (operatorInfo[operator].rollupConfig != address(0))
+        if (operatorInfo[operator].rollupConfig != address(0)) {
             revert RegisterError(2);
-
-        address candidateAddOn = IIDAOCommittee(dao).createCandidateAddOn(
-            _memo,
-            operator
-        );
+        }
+        address candidateAddOn = IIDAOCommittee(dao).createCandidateAddOn(_memo, operator);
         operatorOfLayer[candidateAddOn] = operator;
-        operatorInfo[operator] = CandidateAddOnInfo({
-            rollupConfig: _rollupConfig,
-            candidateAddOn: candidateAddOn
-        });
-
-        rollupConfigInfo[_rollupConfig] = SeqSeigStatus({
-            status: 1,
-            operatorManager: operator
-        });
-
-        emit RegisteredCandidateAddOn(
-            _rollupConfig,
-            _wtonAmount,
-            _memo,
-            operator,
-            candidateAddOn
-        );
-
-        if (IERC20(wton).allowance(address(this), depositManager) < _wtonAmount)
+        operatorInfo[operator] = CandidateAddOnInfo({rollupConfig: _rollupConfig, candidateAddOn: candidateAddOn});
+        rollupConfigInfo[_rollupConfig] = SeqSeigStatus({status: 1, operatorManager: operator});
+        emit RegisteredCandidateAddOn(_rollupConfig, _wtonAmount, _memo, operator, candidateAddOn);
+        if (IERC20(wton).allowance(address(this), depositManager) < _wtonAmount) {
             IERC20(wton).approve(depositManager, type(uint256).max);
-        if (
-            !IIDepositManager(depositManager).deposit(
-                candidateAddOn,
-                operator,
-                _wtonAmount
-            )
-        ) revert RegisterError(3);
+        }
+        if (!IIDepositManager(depositManager).deposit(candidateAddOn, operator, _wtonAmount)) revert RegisterError(3);
     }
 
-    function _availableRegister(
-        address _rollupConfig
-    ) internal view returns (bool result) {
-        (uint8 _type, , , , ) = IL1BridgeRegistry(l1BridgeRegistry)
-            .getRollupInfo(_rollupConfig);
+    function _availableRegister(address _rollupConfig) internal view returns (bool result) {
+        (uint8 _type,,,,) = IL1BridgeRegistry(l1BridgeRegistry).getRollupInfo(_rollupConfig);
         return _type != 0 ? true : false;
     }
 
-    function _checkLayer2TVL(
-        address _rollupConfig
-    ) internal view returns (bool result, uint256 amount) {
-        uint8 _type = IL1BridgeRegistry(l1BridgeRegistry).rollupType(
-            _rollupConfig
-        );
+    function _checkLayer2TVL(address _rollupConfig) internal view returns (bool result, uint256 amount) {
+        uint8 _type = IL1BridgeRegistry(l1BridgeRegistry).rollupType(_rollupConfig);
 
         if (_type == 1) {
             // optimism legacy : titan
 
-            address l1Bridge = IOptimismSystemConfig(_rollupConfig)
-                .l1StandardBridge();
+            address l1Bridge = IOptimismSystemConfig(_rollupConfig).l1StandardBridge();
             if (l1Bridge != address(0)) {
                 amount = IERC20(ton).balanceOf(l1Bridge);
                 result = true;
             }
         } else if (_type == 2) {
             // optimism bedrock native TON: thanos, on-demand-l2
-            address optimismPortal = IOptimismSystemConfig(_rollupConfig)
-                .optimismPortal();
+            address optimismPortal = IOptimismSystemConfig(_rollupConfig).optimismPortal();
             if (optimismPortal != address(0)) {
                 amount = IERC20(ton).balanceOf(optimismPortal);
                 result = true;
@@ -630,15 +510,17 @@ contract Layer2ManagerV1_1 is
 
             if (amount < minimumInitialDepositAmount) revert RegisterError(6);
             IERC20(_ton).safeTransferFrom(sender, address(this), amount);
-            if (IERC20(_ton).allowance(address(this), _wton) < amount)
+            if (IERC20(_ton).allowance(address(this), _wton) < amount) {
                 IERC20(_ton).approve(_wton, type(uint256).max);
+            }
             if (!IWTON(_wton).swapFromTON(amount)) revert RegisterError(7);
             _registerCandidateAddOn(_rollupConfig, amount * 1e9, memo);
         } else {
             // with wton
 
-            if ((amount / 1e9) < minimumInitialDepositAmount)
+            if ((amount / 1e9) < minimumInitialDepositAmount) {
                 revert RegisterError(6);
+            }
             IERC20(_wton).safeTransferFrom(sender, address(this), amount);
             _registerCandidateAddOn(_rollupConfig, amount, memo);
         }

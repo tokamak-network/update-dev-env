@@ -1,8 +1,8 @@
 import type { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
-import { getRandomAddresses } from '@utils'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { getRandomAddresses } from '../utils'
 
 describe('CandidateAddOnProxy', () => {
   let owner: HardhatEthersSigner

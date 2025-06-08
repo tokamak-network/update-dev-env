@@ -8,6 +8,4 @@ import "./CandidateAddOnFactoryStorage.sol";
  * @title CandidateAddOnFactoryProxy
  * @dev
  */
-contract CandidateAddOnFactoryProxy is Proxy, CandidateAddOnFactoryStorage {
-
-}
+contract CandidateAddOnFactoryProxy is Proxy, CandidateAddOnFactoryStorage {}
